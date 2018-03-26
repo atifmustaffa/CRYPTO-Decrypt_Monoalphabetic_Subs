@@ -1,0 +1,74 @@
+"""
+Atif Mustaffa
+Cyptography
+Guess the key
+"""
+import os
+import random
+from EncDec import decrypt
+
+def generate_key(char_guess, old_key):
+	alphabets = "abcdefghijklmnopqrstuvwxyz"
+	ch_index = alphabets.index(char_guess[1])
+	ch = old_key[ch_index]
+
+	data = open("./data.txt", "r").read()
+	if char_guess[0] not in data:
+		data += char_guess[0] + " "
+		open("./data.txt", "w").write(data)
+
+	data_index = open("./data_index.txt", "r").read()
+	if str(ch_index) not in data_index:
+		data_index += str(ch_index) + " "
+		open("./data_index.txt", "w").write(data_index)
+
+	indeces = data_index.split(" ")
+	chars = data.split(" ")
+	for char in chars:
+		alphabets = alphabets.replace(char, "")
+	new_key = ""
+	y = 0
+	for x in range(0, 26):
+		if str(x) in indeces:
+			i = indeces.index(str(x))
+			new_key += chars[i]
+		else:
+			new_key += alphabets[y]
+			y += 1
+
+	# new_key = old_key.replace(ch, "!").replace(char_guess[0], ch).replace("!", char_guess[0])
+	return new_key
+
+print("Guess monoalphabetic key")
+file_name = input("Enter TEXT filename(same directory): ")
+if not os.path.exists(file_name):
+	print("File '" + file_name + "' is not exists")
+else:
+	file = open(file_name, "r")
+	text = file.read()
+	guess_file_name = input("Enter GUESS filename(same directory): ")
+	if not os.path.exists(guess_file_name):
+		print("File '" + guess_file_name + "' is not exists")
+	else:
+		guess_file = open(guess_file_name, "r")
+		guess = guess_file.read().split("\n")
+
+		alphabets = "abcdefghijklmnopqrstuvwxyz"
+
+		count = 0;
+		while count < len(guess):
+			print("\nGuess", count+1, ":", guess[count])
+			print("Text :", decrypt(text, guess[count]))
+			count += 1
+		char_guess = input("\nKey = " + guess[count-1] + "\nAlp = " + alphabets + "\nCharacter to guess (Example: e=a) **0 to stop guessing**: ")
+		while char_guess != "0":
+			new_key = generate_key(char_guess.split("="), guess[count-1])
+			print("\nGuess", count+1, ":", new_key)
+			print("Text :", decrypt(text, new_key))
+			guess.append(new_key)
+			count += 1
+			guess_file = open(guess_file_name, "a")
+			guess_file.write("\n"+new_key)
+			guess_file.close()
+			char_guess = input("\nKey = " + new_key + "\nAlp = " + alphabets + "\nCharacter to guess (Example: e=a) **0 to stop guessing**: ")
+input()
